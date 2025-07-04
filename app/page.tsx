@@ -5,18 +5,22 @@ import { AnalysisForm } from '@/components/AnalysisForm'
 import { StyleSelector } from '@/components/StyleSelector'
 import { ResultsDisplay } from '@/components/ResultsDisplay'
 import { LoadingState } from '@/components/LoadingState'
+import { PinterestReferences } from '@/components/PinterestReferences'
 
 export default function Home() {
-  const [step, setStep] = useState<'input' | 'styles' | 'results'>('input')
+  const [step, setStep] = useState<'input' | 'pinterest' | 'styles' | 'results'>('input')
   const [url, setUrl] = useState('')
   const [analysis, setAnalysis] = useState<any>(null)
   const [selectedStyles, setSelectedStyles] = useState<string[]>([])
+  const [selectedPins, setSelectedPins] = useState<any[]>([])
   const [results, setResults] = useState<any>(null)
   const [loading, setLoading] = useState(false)
+  const [loadingStage, setLoadingStage] = useState<'analysis' | 'generation'>('analysis')
 
   const handleAnalyze = async (inputUrl: string) => {
     setUrl(inputUrl)
     setLoading(true)
+    setLoadingStage('analysis')
     
     try {
       const response = await fetch('/api/analyze', {
@@ -27,7 +31,7 @@ export default function Home() {
       
       const data = await response.json()
       setAnalysis(data)
-      setStep('styles')
+      setStep('pinterest')
     } catch (error) {
       console.error('Ошибка анализа:', error)
     } finally {
@@ -37,6 +41,7 @@ export default function Home() {
 
   const handleGenerate = async () => {
     setLoading(true)
+    setLoadingStage('generation')
     
     try {
       const response = await fetch('/api/generate', {
@@ -45,7 +50,8 @@ export default function Home() {
         body: JSON.stringify({ 
           url, 
           analysis, 
-          styles: selectedStyles 
+          styles: selectedStyles,
+          pinterestReferences: selectedPins 
         })
       })
       
@@ -64,6 +70,7 @@ export default function Home() {
     setUrl('')
     setAnalysis(null)
     setSelectedStyles([])
+    setSelectedPins([])
     setResults(null)
   }
 
@@ -79,12 +86,27 @@ export default function Home() {
           </p>
         </div>
 
-        {loading && <LoadingState />}
+        {loading && <LoadingState stage={loadingStage} />}
 
         {!loading && (
           <>
             {step === 'input' && (
               <AnalysisForm onAnalyze={handleAnalyze} />
+            )}
+
+            {step === 'pinterest' && (
+              <div className="max-w-4xl mx-auto">
+                <div className="bg-white rounded-2xl shadow-xl p-8">
+                  <PinterestReferences
+                    onSelect={(pins) => {
+                      setSelectedPins(pins)
+                      setStep('styles')
+                    }}
+                    industry={analysis?.industry}
+                    style={analysis?.recommendedStyle}
+                  />
+                </div>
+              </div>
             )}
 
             {step === 'styles' && (
@@ -93,7 +115,7 @@ export default function Home() {
                 selectedStyles={selectedStyles}
                 onStylesChange={setSelectedStyles}
                 onGenerate={handleGenerate}
-                onBack={() => setStep('input')}
+                onBack={() => setStep('pinterest')}
               />
             )}
 

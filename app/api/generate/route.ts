@@ -18,7 +18,7 @@ const STYLE_PROMPTS = {
 
 export async function POST(request: Request) {
   try {
-    const { url, analysis, styles } = await request.json()
+    const { url, analysis, styles, pinterestReferences } = await request.json()
     
     // Формируем стилевые предпочтения
     const styleDescriptions = styles.length > 0 
@@ -47,6 +47,11 @@ export async function POST(request: Request) {
           
           Анализ сайта: ${analysis.summary}
           Стилевые предпочтения: ${styleDescriptions}
+          ${pinterestReferences?.length > 0 ? `
+          Референсы из Pinterest:
+          ${pinterestReferences.map((ref: any) => `- ${ref.title}: ${ref.description}`).join('\n')}
+          Учти стилистические элементы выбранных референсов.
+          ` : ''}
           
           Каждый промпт должен предлагать уникальный подход к дизайну, сохраняя при этом суть бренда.
           
