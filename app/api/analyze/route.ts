@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     await page.setViewport({ width: 1920, height: 1080 })
     
     // Переходим на сайт
-    await page.goto(url, { waitUntil: 'networkidle' })
+    await page.goto(url, { waitUntil: 'networkidle0' })
     
     // Делаем скриншот всей страницы
     const fullPageScreenshot = await page.screenshot({ 
