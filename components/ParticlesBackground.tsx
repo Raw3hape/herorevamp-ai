@@ -8,11 +8,14 @@ interface Particle {
   y: number
   z: number
   baseY: number
+  baseX: number
   vx: number
   vy: number
   size: number
   opacity: number
   rotation: number
+  waveOffset: number
+  mouseWave: number
 }
 
 export function ParticlesBackground() {
@@ -51,11 +54,14 @@ export function ParticlesBackground() {
           y: y,
           z: 0,
           baseY: y,
+          baseX: x,
           vx: 0,
           vy: 0,
           size: 3,
           opacity: 0.6,
-          rotation: Math.random() * Math.PI * 2
+          rotation: Math.random() * Math.PI * 2,
+          waveOffset: (i + j) * 0.1,
+          mouseWave: 0
         })
       }
     }
@@ -66,30 +72,43 @@ export function ParticlesBackground() {
 
     window.addEventListener('mousemove', handleMouseMove)
 
+    let time = 0
+    
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
+      time += 0.02
 
       particlesRef.current.forEach((particle, index) => {
-        // 3D wave effect based on mouse position
-        const dx = mouseRef.current.x - particle.x
-        const dy = mouseRef.current.y - particle.y
+        // Ambient wave animation
+        const ambientWave = Math.sin(time + particle.waveOffset) * 15
+        const ambientWaveX = Math.sin(time * 0.7 + particle.waveOffset * 1.5) * 10
+        
+        // Mouse wave with smooth follow and parallax
+        const dx = mouseRef.current.x - particle.baseX
+        const dy = mouseRef.current.y - particle.baseY
         const distance = Math.sqrt(dx * dx + dy * dy)
         
-        // Create wave effect
-        const waveHeight = 30
-        const waveRadius = 200
+        const waveRadius = 400 // Wider radius
+        const waveHeight = 40
         
         if (distance < waveRadius) {
-          const wave = Math.sin((1 - distance / waveRadius) * Math.PI) * waveHeight
-          particle.z = wave
-          particle.y = particle.baseY - wave
+          const targetWave = Math.sin((1 - distance / waveRadius) * Math.PI) * waveHeight
+          // Smooth interpolation with delay
+          particle.mouseWave += (targetWave - particle.mouseWave) * 0.05
         } else {
-          particle.z *= 0.95 // Smooth return to base position
-          particle.y = particle.baseY - particle.z
+          particle.mouseWave *= 0.98 // Slower fade out
         }
         
-        // Rotate rectangles
-        particle.rotation += 0.01
+        // Combine waves with parallax effect
+        const parallaxFactor = 1 + (particle.waveOffset % 1) * 0.5
+        particle.z = (ambientWave + particle.mouseWave) * parallaxFactor
+        
+        // Update position with both vertical and horizontal movement
+        particle.y = particle.baseY - particle.z
+        particle.x = particle.baseX + ambientWaveX * parallaxFactor
+        
+        // Gentle rotation
+        particle.rotation += 0.005 + Math.sin(time + particle.waveOffset) * 0.003
 
         // Calculate color based on distance from mouse
         const dx2 = mouseRef.current.x - particle.x
