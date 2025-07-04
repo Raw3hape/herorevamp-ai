@@ -15,7 +15,7 @@ export async function getBrowser() {
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath(),
-      headless: 'new',
+      headless: true,
     })
   }
 }
