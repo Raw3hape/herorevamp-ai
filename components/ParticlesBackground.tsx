@@ -6,11 +6,13 @@ import { motion } from 'framer-motion'
 interface Particle {
   x: number
   y: number
+  z: number
+  baseY: number
   vx: number
   vy: number
   size: number
   opacity: number
-  hue: number
+  rotation: number
 }
 
 export function ParticlesBackground() {
@@ -34,18 +36,28 @@ export function ParticlesBackground() {
     resizeCanvas()
     window.addEventListener('resize', resizeCanvas)
 
-    // Initialize particles
-    const particleCount = 1000
-    for (let i = 0; i < particleCount; i++) {
-      particlesRef.current.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        size: Math.random() * 4 + 1,
-        opacity: Math.random() * 0.8 + 0.2,
-        hue: Math.random() * 360
-      })
+    // Initialize particles in a grid for wave effect
+    const cols = 50
+    const rows = 20
+    const particleCount = cols * rows
+    
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < cols; j++) {
+        const x = (j / cols) * canvas.width
+        const y = (i / rows) * canvas.height
+        
+        particlesRef.current.push({
+          x: x,
+          y: y,
+          z: 0,
+          baseY: y,
+          vx: 0,
+          vy: 0,
+          size: 3,
+          opacity: 0.6,
+          rotation: Math.random() * Math.PI * 2
+        })
+      }
     }
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -57,58 +69,65 @@ export function ParticlesBackground() {
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-      particlesRef.current.forEach((particle) => {
-        // Mouse interaction
+      particlesRef.current.forEach((particle, index) => {
+        // 3D wave effect based on mouse position
         const dx = mouseRef.current.x - particle.x
         const dy = mouseRef.current.y - particle.y
         const distance = Math.sqrt(dx * dx + dy * dy)
         
-        if (distance < 150) {
-          const force = (150 - distance) / 150
-          particle.vx -= (dx / distance) * force * 0.3
-          particle.vy -= (dy / distance) * force * 0.3
-        }
-
-        // Update position
-        particle.x += particle.vx
-        particle.y += particle.vy
-
-        // Damping
-        particle.vx *= 0.99
-        particle.vy *= 0.99
-
-        // Boundaries
-        if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1
-        if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1
-
-        // Keep particles in bounds
-        particle.x = Math.max(0, Math.min(canvas.width, particle.x))
-        particle.y = Math.max(0, Math.min(canvas.height, particle.y))
-
-        // Update hue for gradient effect
-        particle.hue = (particle.hue + 0.5) % 360
+        // Create wave effect
+        const waveHeight = 30
+        const waveRadius = 200
         
-        // Draw particle as glowing spark
-        const gradient = ctx.createRadialGradient(
-          particle.x, particle.y, 0,
-          particle.x, particle.y, particle.size * 2
+        if (distance < waveRadius) {
+          const wave = Math.sin((1 - distance / waveRadius) * Math.PI) * waveHeight
+          particle.z = wave
+          particle.y = particle.baseY - wave
+        } else {
+          particle.z *= 0.95 // Smooth return to base position
+          particle.y = particle.baseY - particle.z
+        }
+        
+        // Rotate rectangles
+        particle.rotation += 0.01
+
+        // Calculate color based on distance from mouse
+        const dx2 = mouseRef.current.x - particle.x
+        const dy2 = mouseRef.current.y - particle.y
+        const mouseDist = Math.sqrt(dx2 * dx2 + dy2 * dy2)
+        const maxDist = 300
+        const colorIntensity = Math.max(0, 1 - mouseDist / maxDist)
+        
+        // Purple gradient based on mouse distance and z position
+        const lightness = 40 + (colorIntensity * 20) + (particle.z / 30 * 20)
+        const saturation = 60 + (colorIntensity * 20)
+        
+        // Draw rectangle with rotation
+        ctx.save()
+        ctx.translate(particle.x, particle.y)
+        ctx.rotate(particle.rotation)
+        
+        // Scale based on z position for 3D effect
+        const scale = 1 + particle.z / 50
+        
+        // Rectangle with gradient
+        const gradient = ctx.createLinearGradient(
+          -particle.size * scale, -particle.size * scale,
+          particle.size * scale, particle.size * scale
         )
         
-        const hsl = `hsl(${particle.hue}, 70%, 60%)`
-        gradient.addColorStop(0, `hsla(${particle.hue}, 100%, 70%, ${particle.opacity})`)
-        gradient.addColorStop(0.5, `hsla(${particle.hue}, 70%, 60%, ${particle.opacity * 0.5})`)
-        gradient.addColorStop(1, `hsla(${particle.hue}, 70%, 50%, 0)`)
+        gradient.addColorStop(0, `hsla(270, ${saturation}%, ${lightness}%, ${particle.opacity * 0.8})`)
+        gradient.addColorStop(1, `hsla(280, ${saturation - 10}%, ${lightness - 10}%, ${particle.opacity * 0.4})`)
         
-        ctx.beginPath()
-        ctx.arc(particle.x, particle.y, particle.size * 2, 0, Math.PI * 2)
         ctx.fillStyle = gradient
-        ctx.fill()
+        ctx.fillRect(
+          -particle.size * scale,
+          -particle.size * scale,
+          particle.size * 2 * scale,
+          particle.size * 2 * scale
+        )
         
-        // Inner bright core
-        ctx.beginPath()
-        ctx.arc(particle.x, particle.y, particle.size * 0.5, 0, Math.PI * 2)
-        ctx.fillStyle = `hsla(${particle.hue}, 100%, 90%, ${particle.opacity})`
-        ctx.fill()
+        ctx.restore()
       })
 
       animationRef.current = requestAnimationFrame(animate)
