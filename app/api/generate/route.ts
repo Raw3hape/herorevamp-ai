@@ -71,7 +71,7 @@ export async function POST(request: Request) {
       })
       
       return {
-        imageUrl: imageResponse.data[0]?.url || '',
+        imageUrl: imageResponse.data?.[0]?.url || '',
         style: styles[index] || 'AI-выбор',
         description: `Вариант ${index + 1} с учетом выбранных стилевых предпочтений`,
         prompt: prompt
