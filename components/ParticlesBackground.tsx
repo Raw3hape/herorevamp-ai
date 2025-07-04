@@ -10,6 +10,7 @@ interface Particle {
   vy: number
   size: number
   opacity: number
+  hue: number
 }
 
 export function ParticlesBackground() {
@@ -34,15 +35,16 @@ export function ParticlesBackground() {
     window.addEventListener('resize', resizeCanvas)
 
     // Initialize particles
-    const particleCount = 50
+    const particleCount = 1000
     for (let i = 0; i < particleCount; i++) {
       particlesRef.current.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
-        size: Math.random() * 3 + 1,
-        opacity: Math.random() * 0.5 + 0.1
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        size: Math.random() * 4 + 1,
+        opacity: Math.random() * 0.8 + 0.2,
+        hue: Math.random() * 360
       })
     }
 
@@ -61,10 +63,10 @@ export function ParticlesBackground() {
         const dy = mouseRef.current.y - particle.y
         const distance = Math.sqrt(dx * dx + dy * dy)
         
-        if (distance < 100) {
-          const force = (100 - distance) / 100
-          particle.vx -= (dx / distance) * force * 0.5
-          particle.vy -= (dy / distance) * force * 0.5
+        if (distance < 150) {
+          const force = (150 - distance) / 150
+          particle.vx -= (dx / distance) * force * 0.3
+          particle.vy -= (dy / distance) * force * 0.3
         }
 
         // Update position
@@ -83,26 +85,30 @@ export function ParticlesBackground() {
         particle.x = Math.max(0, Math.min(canvas.width, particle.x))
         particle.y = Math.max(0, Math.min(canvas.height, particle.y))
 
-        // Draw particle
+        // Update hue for gradient effect
+        particle.hue = (particle.hue + 0.5) % 360
+        
+        // Draw particle as glowing spark
+        const gradient = ctx.createRadialGradient(
+          particle.x, particle.y, 0,
+          particle.x, particle.y, particle.size * 2
+        )
+        
+        const hsl = `hsl(${particle.hue}, 70%, 60%)`
+        gradient.addColorStop(0, `hsla(${particle.hue}, 100%, 70%, ${particle.opacity})`)
+        gradient.addColorStop(0.5, `hsla(${particle.hue}, 70%, 60%, ${particle.opacity * 0.5})`)
+        gradient.addColorStop(1, `hsla(${particle.hue}, 70%, 50%, 0)`)
+        
         ctx.beginPath()
-        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(156, 163, 175, ${particle.opacity})`
+        ctx.arc(particle.x, particle.y, particle.size * 2, 0, Math.PI * 2)
+        ctx.fillStyle = gradient
         ctx.fill()
-
-        // Draw connections
-        particlesRef.current.forEach((otherParticle) => {
-          const dx = otherParticle.x - particle.x
-          const dy = otherParticle.y - particle.y
-          const distance = Math.sqrt(dx * dx + dy * dy)
-
-          if (distance < 150 && distance > 0) {
-            ctx.beginPath()
-            ctx.moveTo(particle.x, particle.y)
-            ctx.lineTo(otherParticle.x, otherParticle.y)
-            ctx.strokeStyle = `rgba(156, 163, 175, ${0.1 * (1 - distance / 150)})`
-            ctx.stroke()
-          }
-        })
+        
+        // Inner bright core
+        ctx.beginPath()
+        ctx.arc(particle.x, particle.y, particle.size * 0.5, 0, Math.PI * 2)
+        ctx.fillStyle = `hsla(${particle.hue}, 100%, 90%, ${particle.opacity})`
+        ctx.fill()
       })
 
       animationRef.current = requestAnimationFrame(animate)
