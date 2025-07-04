@@ -5,6 +5,7 @@ import { AnalysisForm } from '@/components/AnalysisForm'
 import { StyleSelector } from '@/components/StyleSelector'
 import { ResultsDisplay } from '@/components/ResultsDisplay'
 import { LoadingState } from '@/components/LoadingState'
+import { ParticlesBackground } from '@/components/ParticlesBackground'
 import { logger } from '@/lib/logger'
 
 export default function Home() {
@@ -72,31 +73,36 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white">
-      <div className="container mx-auto px-4 py-8">
+    <main className="min-h-screen relative overflow-hidden">
+      <ParticlesBackground />
+      
+      {/* Animated gradient background */}
+      <div className="fixed inset-0 gradient-animate opacity-10 z-0" />
+      
+      <div className="container mx-auto px-4 py-8 relative z-10">
         {/* Header */}
-        <header className="flex justify-between items-center mb-16">
-          <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-              <span className="text-black font-bold text-xl">↑</span>
+        <header className="flex justify-between items-center mb-8">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+              <span className="text-white font-bold text-2xl">↑</span>
             </div>
-            <span className="text-xl font-light tracking-wider">HeroRevamp</span>
+            <span className="text-2xl font-semibold text-gradient">HeroRevamp</span>
           </div>
           <nav className="hidden md:flex space-x-8">
-            <a href="#" className="text-gray-400 hover:text-white transition">Примеры</a>
-            <a href="#" className="text-gray-400 hover:text-white transition">API</a>
-            <a href="#" className="text-gray-400 hover:text-white transition">Контакты</a>
+            <a href="#" className="text-gray-600 hover:text-gray-900 transition font-medium">Примеры</a>
+            <a href="#" className="text-gray-600 hover:text-gray-900 transition font-medium">API</a>
+            <a href="#" className="text-gray-600 hover:text-gray-900 transition font-medium">Контакты</a>
           </nav>
         </header>
 
         {/* Hero Section */}
         {step === 'input' && (
-          <div className="min-h-[80vh] flex flex-col justify-center items-center text-center">
-            <h1 className="text-6xl md:text-8xl font-light mb-6 tracking-tight">
-              Редизайн<br/>
-              <span className="text-gray-400">за 60 секунд</span>
+          <div className="min-h-[70vh] flex flex-col justify-center items-center text-center">
+            <h1 className="text-5xl md:text-7xl font-bold mb-4 tracking-tight">
+              <span className="text-gradient">Редизайн</span><br/>
+              <span className="text-gray-700">за 60 секунд</span>
             </h1>
-            <p className="text-xl text-gray-400 mb-12 max-w-2xl">
+            <p className="text-xl text-gray-600 mb-8 max-w-2xl leading-relaxed">
               AI анализирует ваш сайт и создает современный дизайн hero-секции. 
               Просто. Быстро. Качественно.
             </p>
