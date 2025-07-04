@@ -1,5 +1,5 @@
 import puppeteer from 'puppeteer-core'
-import chromium from 'chrome-aws-lambda'
+import chromium from '@sparticuz/chromium'
 
 export async function getBrowser() {
   if (process.env.NODE_ENV === 'development') {
@@ -10,12 +10,12 @@ export async function getBrowser() {
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     })
   } else {
-    // Для production (Vercel) используем chrome-aws-lambda
+    // Для production (Vercel) используем @sparticuz/chromium
     return puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath,
-      headless: chromium.headless,
+      executablePath: await chromium.executablePath(),
+      headless: 'new',
     })
   }
 }
