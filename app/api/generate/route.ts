@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import OpenAI from 'openai'
+import { logger } from '@/lib/logger'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -18,7 +19,8 @@ const STYLE_PROMPTS = {
 
 export async function POST(request: Request) {
   try {
-    const { url, analysis, styles, pinterestReferences } = await request.json()
+    const { url, analysis, styles } = await request.json()
+    logger.info('Начата генерация дизайна', { url, styles })
     
     // Формируем стилевые предпочтения
     const styleDescriptions = styles.length > 0 
@@ -47,11 +49,6 @@ export async function POST(request: Request) {
           
           Анализ сайта: ${analysis.summary}
           Стилевые предпочтения: ${styleDescriptions}
-          ${pinterestReferences?.length > 0 ? `
-          Референсы из Pinterest:
-          ${pinterestReferences.map((ref: any) => `- ${ref.title}: ${ref.description}`).join('\n')}
-          Учти стилистические элементы выбранных референсов.
-          ` : ''}
           
           Каждый промпт должен предлагать уникальный подход к дизайну, сохраняя при этом суть бренда.
           
@@ -86,7 +83,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ designs })
     
   } catch (error) {
-    console.error('Ошибка генерации:', error)
+    logger.error('Ошибка генерации дизайна', error as Error)
     return NextResponse.json(
       { error: 'Ошибка при генерации дизайна' },
       { status: 500 }

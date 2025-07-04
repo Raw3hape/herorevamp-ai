@@ -27,45 +27,45 @@ export function AnalysisForm({ onAnalyze }: AnalysisFormProps) {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="bg-white rounded-2xl shadow-xl p-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-6">
-          Введите URL сайта для анализа
-        </h2>
+    <div className="max-w-4xl mx-auto mt-12">
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="relative">
+          <input
+            type="url"
+            value={url}
+            onChange={(e) => {
+              setUrl(e.target.value)
+              setError('')
+            }}
+            placeholder="https://example.com"
+            className="w-full px-6 py-4 text-xl bg-transparent border border-gray-700 rounded-sm text-white placeholder-gray-500 focus:outline-none focus:border-white transition-colors"
+          />
+          {error && (
+            <p className="mt-2 text-sm text-red-400">{error}</p>
+          )}
+        </div>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <input
-              type="url"
-              value={url}
-              onChange={(e) => {
-                setUrl(e.target.value)
-                setError('')
-              }}
-              placeholder="https://example.com"
-              className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            {error && (
-              <p className="mt-2 text-sm text-red-600">{error}</p>
-            )}
-          </div>
-          
-          <button
-            type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200"
-          >
-            Анализировать сайт
-          </button>
-        </form>
+        <button
+          type="submit"
+          className="w-full md:w-auto mx-auto block px-16 py-4 bg-white text-black font-medium text-lg rounded-sm hover:bg-gray-200 transition-colors"
+        >
+          Начать анализ
+        </button>
+      </form>
 
-        <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-          <h3 className="font-semibold text-gray-700 mb-2">Как это работает:</h3>
-          <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
-            <li>Мы сделаем скриншоты вашего сайта</li>
-            <li>AI проанализирует дизайн и контент</li>
-            <li>Вы выберете стиль для нового дизайна</li>
-            <li>Получите 2 современных варианта редизайна</li>
-          </ol>
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-8 mt-24 text-center">
+        <div>
+          <div className="text-4xl font-light mb-2">60<span className="text-gray-400">s</span></div>
+          <div className="text-sm text-gray-400">Время генерации</div>
+        </div>
+        <div>
+          <div className="text-4xl font-light mb-2">2<span className="text-gray-400">x</span></div>
+          <div className="text-sm text-gray-400">Варианты дизайна</div>
+        </div>
+        <div>
+          <div className="text-4xl font-light mb-2">100<span className="text-gray-400">%</span></div>
+          <div className="text-sm text-gray-400">AI-качество</div>
         </div>
       </div>
     </div>

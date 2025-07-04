@@ -114,7 +114,7 @@ export function LoadingMessages({ stage }: { stage: 'analysis' | 'generation' })
           transition={{ duration: 0.5 }}
           className="text-center"
         >
-          <p className="text-xl font-medium text-gray-800">
+          <p className="text-xl font-light text-white">
             <span className="mr-2">{currentMessage.emoji}</span>
             {currentMessage.text}
           </p>
@@ -122,9 +122,9 @@ export function LoadingMessages({ stage }: { stage: 'analysis' | 'generation' })
       </AnimatePresence>
 
       {/* Прогресс бар */}
-      <div className="w-64 h-2 bg-gray-200 rounded-full overflow-hidden">
+      <div className="w-64 h-1 bg-gray-800 overflow-hidden">
         <motion.div
-          className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
+          className="h-full bg-white"
           animate={{
             width: ["0%", "100%"],
           }}
@@ -140,13 +140,13 @@ export function LoadingMessages({ stage }: { stage: 'analysis' | 'generation' })
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 2 }}
-        className="max-w-md p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg"
+        className="max-w-md p-6 border border-gray-800 rounded-sm"
       >
         <div className="flex items-start space-x-3">
           <span className="text-2xl">{currentTip.icon}</span>
           <div>
-            <h3 className="font-semibold text-gray-900 mb-1">{currentTip.title}</h3>
-            <p className="text-sm text-gray-700">{currentTip.text}</p>
+            <h3 className="font-medium text-white mb-1">{currentTip.title}</h3>
+            <p className="text-sm text-gray-400">{currentTip.text}</p>
           </div>
         </div>
       </motion.div>
@@ -156,10 +156,10 @@ export function LoadingMessages({ stage }: { stage: 'analysis' | 'generation' })
         {[0, 1, 2].map((i) => (
           <motion.div
             key={i}
-            className="w-3 h-3 bg-gray-400 rounded-full"
+            className="w-2 h-2 bg-gray-600 rounded-full"
             animate={{
               scale: [1, 1.5, 1],
-              backgroundColor: ["#9CA3AF", "#3B82F6", "#9CA3AF"],
+              backgroundColor: ["#4B5563", "#FFFFFF", "#4B5563"],
             }}
             transition={{
               duration: 1.5,

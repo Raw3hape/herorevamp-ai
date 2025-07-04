@@ -1,18 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AnalysisForm } from '@/components/AnalysisForm'
 import { StyleSelector } from '@/components/StyleSelector'
 import { ResultsDisplay } from '@/components/ResultsDisplay'
 import { LoadingState } from '@/components/LoadingState'
-import { PinterestReferences } from '@/components/PinterestReferences'
+import { logger } from '@/lib/logger'
 
 export default function Home() {
-  const [step, setStep] = useState<'input' | 'pinterest' | 'styles' | 'results'>('input')
+  const [step, setStep] = useState<'input' | 'styles' | 'results'>('input')
   const [url, setUrl] = useState('')
   const [analysis, setAnalysis] = useState<any>(null)
   const [selectedStyles, setSelectedStyles] = useState<string[]>([])
-  const [selectedPins, setSelectedPins] = useState<any[]>([])
   const [results, setResults] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [loadingStage, setLoadingStage] = useState<'analysis' | 'generation'>('analysis')
@@ -31,9 +30,9 @@ export default function Home() {
       
       const data = await response.json()
       setAnalysis(data)
-      setStep('pinterest')
+      setStep('styles')
     } catch (error) {
-      console.error('Ошибка анализа:', error)
+      logger.error('Ошибка анализа сайта', error as Error, { url: inputUrl })
     } finally {
       setLoading(false)
     }
@@ -50,8 +49,7 @@ export default function Home() {
         body: JSON.stringify({ 
           url, 
           analysis, 
-          styles: selectedStyles,
-          pinterestReferences: selectedPins 
+          styles: selectedStyles 
         })
       })
       
@@ -59,7 +57,7 @@ export default function Home() {
       setResults(data)
       setStep('results')
     } catch (error) {
-      console.error('Ошибка генерации:', error)
+      logger.error('Ошибка генерации дизайна', error as Error, { url, styles: selectedStyles })
     } finally {
       setLoading(false)
     }
@@ -70,21 +68,40 @@ export default function Home() {
     setUrl('')
     setAnalysis(null)
     setSelectedStyles([])
-    setSelectedPins([])
     setResults(null)
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="container mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-gray-900 mb-4">
-            HeroRevamp AI
-          </h1>
-          <p className="text-xl text-gray-600">
-            Мгновенный AI-редизайн hero-секций устаревших сайтов
-          </p>
-        </div>
+    <main className="min-h-screen bg-black text-white">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <header className="flex justify-between items-center mb-16">
+          <div className="flex items-center space-x-2">
+            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+              <span className="text-black font-bold text-xl">↑</span>
+            </div>
+            <span className="text-xl font-light tracking-wider">HeroRevamp</span>
+          </div>
+          <nav className="hidden md:flex space-x-8">
+            <a href="#" className="text-gray-400 hover:text-white transition">Примеры</a>
+            <a href="#" className="text-gray-400 hover:text-white transition">API</a>
+            <a href="#" className="text-gray-400 hover:text-white transition">Контакты</a>
+          </nav>
+        </header>
+
+        {/* Hero Section */}
+        {step === 'input' && (
+          <div className="min-h-[80vh] flex flex-col justify-center items-center text-center">
+            <h1 className="text-6xl md:text-8xl font-light mb-6 tracking-tight">
+              Редизайн<br/>
+              <span className="text-gray-400">за 60 секунд</span>
+            </h1>
+            <p className="text-xl text-gray-400 mb-12 max-w-2xl">
+              AI анализирует ваш сайт и создает современный дизайн hero-секции. 
+              Просто. Быстро. Качественно.
+            </p>
+          </div>
+        )}
 
         {loading && <LoadingState stage={loadingStage} />}
 
@@ -94,28 +111,13 @@ export default function Home() {
               <AnalysisForm onAnalyze={handleAnalyze} />
             )}
 
-            {step === 'pinterest' && (
-              <div className="max-w-4xl mx-auto">
-                <div className="bg-white rounded-2xl shadow-xl p-8">
-                  <PinterestReferences
-                    onSelect={(pins) => {
-                      setSelectedPins(pins)
-                      setStep('styles')
-                    }}
-                    industry={analysis?.industry}
-                    style={analysis?.recommendedStyle}
-                  />
-                </div>
-              </div>
-            )}
-
             {step === 'styles' && (
               <StyleSelector 
                 analysis={analysis}
                 selectedStyles={selectedStyles}
                 onStylesChange={setSelectedStyles}
                 onGenerate={handleGenerate}
-                onBack={() => setStep('pinterest')}
+                onBack={() => setStep('input')}
               />
             )}
 

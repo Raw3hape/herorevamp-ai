@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import * as cheerio from 'cheerio'
 import OpenAI from 'openai'
 import { getBrowser } from '@/lib/puppeteer'
+import { logger } from '@/lib/logger'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -10,6 +11,7 @@ const openai = new OpenAI({
 export async function POST(request: Request) {
   try {
     const { url } = await request.json()
+    logger.info('Начат анализ сайта', { url })
     
     // Запускаем браузер
     const browser = await getBrowser()
@@ -88,7 +90,7 @@ export async function POST(request: Request) {
     })
     
   } catch (error) {
-    console.error('Ошибка анализа:', error)
+    logger.error('Ошибка анализа сайта', error as Error, { url: request.url })
     return NextResponse.json(
       { error: 'Ошибка при анализе сайта' },
       { status: 500 }
